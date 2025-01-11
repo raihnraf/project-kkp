@@ -3,6 +3,7 @@ package Main;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -19,100 +20,96 @@ public class Data_Barang extends javax.swing.JPanel {
     public DefaultTableModel tabModel;
     Connection cn = Koneksi.Koneksi();
     
+    private javax.swing.JLabel lb_dataBarang;
+    private javax.swing.JLabel lb_pencarian;
+    private javax.swing.JLabel lb_formDataBarang;
+    private javax.swing.JLabel lb_kodeBarang;
+    private javax.swing.JLabel lb_jenisBarang;
+    private javax.swing.JLabel lb_totalHarga;
+    private javax.swing.JLabel lb_status;
+    private javax.swing.JTextField txt_kodeBarang;
+    private javax.swing.JTextField txt_totalHarga;
+    private javax.swing.JTextField txt_pencarian;
+    private javax.swing.JComboBox<String> cb_jenisBarang;
+    private javax.swing.JComboBox<String> cb_status;
+    private javax.swing.JButton btn_simpan;
+    private javax.swing.JButton btn_edit;
+    private javax.swing.JButton btn_hapus;
+    private javax.swing.JButton btn_reset;
+    private javax.swing.JScrollPane scroll_table;
+    private Custom.TableCustom tb_dataBarang;
+    
     public void judul(){
-        Object[] judul = {"Kode Barang", "Nama Barang", "Jumlah Barang Masuk", "Tanggal Barang Masuk"};
+        Object[] judul = {"Kode Barang", "Jenis Barang", "Total Harga", "Status"};
         
         tabModel = new DefaultTableModel(null, judul){
             @Override
-            public boolean isCellEditable(int row, int column) {    //CELL TABLE TIDAK BISA DI EDIT
-                return false; // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/OverriddenMethodBody
+            public boolean isCellEditable(int row, int column) {
+                return false;
             }
-            
         };
         tb_dataBarang.setModel(tabModel);
     }
     
-    public void tampilData(String where){
+    public void tampilData(String where) {
         tabModel.setRowCount(0);
-    
-        String cari = txt_pencarian.getText();
         try {
             st = cn.createStatement();
-            rs = st.executeQuery("SELECT * FROM tb_barangmasuk WHERE "
-                    + "kode_barangMsk LIKE '%" + cari + "%' OR "
-                    + "nama_barangMsk LIKE '%" + cari + "%' OR "
-                    + "jumlah_barangMsk LIKE '%" + cari + "%' OR "
-                    + "tanggal_masuk LIKE '%" + cari + "%'");
-
+            String sql = "SELECT * FROM tb_barangmasuk WHERE "
+                    + "kode_barangMsk LIKE '%" + txt_pencarian.getText() + "%' OR "
+                    + "jenis_barang LIKE '%" + txt_pencarian.getText() + "%' OR "
+                    + "total_harga LIKE '%" + txt_pencarian.getText() + "%' OR "
+                    + "status LIKE '%" + txt_pencarian.getText() + "%'";
+            rs = st.executeQuery(sql);
+            
             while (rs.next()) {
                 Object[] data = {
                     rs.getString("kode_barangMsk"),
-                    rs.getString("nama_barangMsk"),
-                    rs.getString("jumlah_barangMsk"),
-                    rs.getString("tanggal_masuk")
+                    rs.getString("jenis_barang"),
+                    rs.getString("total_harga"),
+                    rs.getString("status")
                 };
                 tabModel.addRow(data);
             }
-        } catch (SQLException e) {
-                e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
     
-    public void simpan(String where){
+    public void simpan() {
         try {
-             if (txt_kodeBarang.getText().isEmpty()){
-                JOptionPane.showMessageDialog(new JFrame(), "Kode Barang Diperlukan", "Error", JOptionPane.ERROR_MESSAGE);
-            } else if (cb_namaBrg.getSelectedItem() == null || cb_namaBrg.getSelectedItem().toString().isEmpty()) {
-                JOptionPane.showMessageDialog(new JFrame(), "Nama Barang Diperlukan", "Error", JOptionPane.ERROR_MESSAGE);
-            } else if (txt_jmlBarang.getText().isEmpty()) {
-                JOptionPane.showMessageDialog(new JFrame(), "Jumlah Barang Masuk Diperlukan", "Error", JOptionPane.ERROR_MESSAGE);
-            }else if (date_barang.getDate()== null) {
-                JOptionPane.showMessageDialog(new JFrame(), "Tanggal Barang Masuk Diperlukan", "Error", JOptionPane.ERROR_MESSAGE);
+            if (txt_kodeBarang.getText().isEmpty()) {
+                JOptionPane.showMessageDialog(null, "Kode Barang Masih Kosong");
+            } else if (cb_jenisBarang.getSelectedItem().equals("--Pilih Jenis Barang--")) {
+                JOptionPane.showMessageDialog(null, "Jenis Barang Belum Dipilih");
+            } else if (txt_totalHarga.getText().isEmpty()) {
+                JOptionPane.showMessageDialog(null, "Total Harga Masih Kosong");
             } else {
-                
-                // Format tanggal
-                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-                String tanggalMasuk = sdf.format(date_barang.getDate());
-                
                 st = cn.createStatement();
-                st.executeUpdate("INSERT INTO tb_barangmasuk VALUES('"
-                    + txt_kodeBarang.getText() + "', '"
-                    + cb_namaBrg.getSelectedItem().toString() + "', '"
-                    + txt_jmlBarang.getText() + "', '"
-                    + tanggalMasuk + "')");
+                st.executeUpdate("INSERT INTO tb_barangmasuk VALUES ('" 
+                    + txt_kodeBarang.getText() + "','" 
+                    + cb_jenisBarang.getSelectedItem() + "','" 
+                    + txt_totalHarga.getText() + "','"
+                    + cb_status.getSelectedItem() + "')");
                 
-                reset();
                 tampilData("");
-                JOptionPane.showMessageDialog(null, "Data Barang Masuk Berhasil Di Simpan");
-                  //Aktifkan tombol Simpan
-                btn_edit.setEnabled(false); //Nonaktifkan tombol Update
-                btn_hapus.setEnabled(false);  //Nonaktifkan tombol Hapus
+                reset();
+                JOptionPane.showMessageDialog(null, "Data Berhasil Disimpan");
             }
-        } catch (SQLException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
     
     
-    public void edit(String where){
-        String kodeBarangMsk = txt_kodeBarang.getText();
-        String namaBarangMsk = cb_namaBrg.getSelectedItem().toString();
-        String jumlahBarangMsk = txt_jmlBarang.getText();
-        java.util.Date tglBarangMsk_Util = date_barang.getDate(); // Mendapatkan java.util.Date
-
+    public void edit(String where) {
         try {
-            // Konversi dari java.util.Date ke java.sql.Date
-            java.sql.Date sql_TglBarangMsk = null;
-            if (tglBarangMsk_Util != null) {
-                sql_TglBarangMsk = new java.sql.Date(tglBarangMsk_Util.getTime());
-            }
-            
             st = cn.createStatement();
             st.executeUpdate("UPDATE tb_barangmasuk SET "
-                + "kode_barangMsk='" + kodeBarangMsk + "', "
-                + "nama_barangMsk='" + namaBarangMsk + "', "
-                + "jumlah_barangMsk='" + jumlahBarangMsk + "', "
-                + "tanggal_masuk='" + sql_TglBarangMsk + "' WHERE kode_barangMsk='" + kodeBarangMsk + "'");
+                + "jenis_barang='" + cb_jenisBarang.getSelectedItem() + "',"
+                + "total_harga='" + txt_totalHarga.getText() + "',"
+                + "status='" + cb_status.getSelectedItem() + "' "
+                + "WHERE kode_barangMsk='" + txt_kodeBarang.getText() + "'");
 
             tampilData(""); // Refresh data di tabel
             reset(); // Reset input field
@@ -154,13 +151,11 @@ public class Data_Barang extends javax.swing.JPanel {
     
     
     public void reset(){
-        // Mengatur ulang nilai pada ComboBox dan field input
         txt_kodeBarang.setText("");
-        cb_namaBrg.setSelectedItem(0); // Mengatur ComboBox ke kondisi tidak ada pilihan
-        txt_jmlBarang.setText("");
-        date_barang.setDate(null);
-
-        // Mengatur tombol
+        cb_jenisBarang.setSelectedIndex(0);
+        txt_totalHarga.setText("");
+        cb_status.setSelectedIndex(0);
+        
         txt_kodeBarang.setEnabled(true);
         btn_simpan.setEnabled(true);
         btn_edit.setEnabled(false);
@@ -168,35 +163,19 @@ public class Data_Barang extends javax.swing.JPanel {
     }
     
     
-    public void klikTabel(String where){
+    public void klikTabel(String where) {
         int selectedRow = tb_dataBarang.getSelectedRow();
-    
+
         if (selectedRow != -1) {
-            System.out.println("Baris yang dipilih: " + selectedRow);  // Debug untuk memastikan baris terpilih
-
-            // Mengambil data dari baris yang dipilih
             txt_kodeBarang.setText(tb_dataBarang.getValueAt(selectedRow, 0).toString());
-            cb_namaBrg.setSelectedItem(tb_dataBarang.getValueAt(selectedRow, 1).toString());
-            txt_jmlBarang.setText(tb_dataBarang.getValueAt(selectedRow, 2).toString());
+            cb_jenisBarang.setSelectedItem(tb_dataBarang.getValueAt(selectedRow, 1).toString());
+            txt_totalHarga.setText(tb_dataBarang.getValueAt(selectedRow, 2).toString());
+            cb_status.setSelectedItem(tb_dataBarang.getValueAt(selectedRow, 3).toString());
 
-            try {
-                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-                String tanggalString = tb_dataBarang.getValueAt(selectedRow, 3).toString();
-                java.util.Date tanggal = sdf.parse(tanggalString);  // Konversi String ke Date
-
-                // Set tanggal ke JDateChooser
-                date_barang.setDate(tanggal);
-            } catch (ParseException e) {
-                e.printStackTrace();
-            }
-
-            // Nonaktifkan atau aktifkan tombol dan textfield
-            txt_kodeBarang.setEnabled(false); // Nonaktifkan ComboBox kode barang
-            btn_simpan.setEnabled(false); // Nonaktifkan tombol Simpan
-            btn_edit.setEnabled(true);  // Aktifkan tombol Update
-            btn_hapus.setEnabled(true);   // Aktifkan tombol Hapus
-        } else {
-            System.out.println("Tidak ada baris yang dipilih");  // Debug jika tidak ada baris yang dipilih
+            txt_kodeBarang.setEnabled(false);
+            btn_simpan.setEnabled(false);
+            btn_edit.setEnabled(true);
+            btn_hapus.setEnabled(true);
         }
     }
     
@@ -265,12 +244,12 @@ public class Data_Barang extends javax.swing.JPanel {
         lb_formDataBarang = new javax.swing.JLabel();
         lb_kodeBarang = new javax.swing.JLabel();
         txt_kodeBarang = new javax.swing.JTextField();
-        lb_namaBarang = new javax.swing.JLabel();
-        cb_namaBrg = new javax.swing.JComboBox<>();
-        lb_jmlBarang = new javax.swing.JLabel();
-        txt_jmlBarang = new javax.swing.JTextField();
-        lb_tglBarang = new javax.swing.JLabel();
-        date_barang = new com.toedter.calendar.JDateChooser();
+        lb_jenisBarang = new javax.swing.JLabel();
+        cb_jenisBarang = new javax.swing.JComboBox<>();
+        lb_totalHarga = new javax.swing.JLabel();
+        txt_totalHarga = new javax.swing.JTextField();
+        lb_status = new javax.swing.JLabel();
+        cb_status = new javax.swing.JComboBox<>();
 
         setLayout(new java.awt.CardLayout());
 
@@ -367,38 +346,61 @@ public class Data_Barang extends javax.swing.JPanel {
         txt_kodeBarang.setFont(new java.awt.Font("Times New Roman", 0, 16)); // NOI18N
         pn_dataBarang.add(txt_kodeBarang, new org.netbeans.lib.awtextra.AbsoluteConstraints(240, 193, 250, -1));
 
-        lb_namaBarang.setFont(new java.awt.Font("Times New Roman", 1, 16)); // NOI18N
-        lb_namaBarang.setText("Nama Barang");
-        pn_dataBarang.add(lb_namaBarang, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 240, -1, -1));
+        lb_jenisBarang.setFont(new java.awt.Font("Times New Roman", 1, 16)); // NOI18N
+        lb_jenisBarang.setText("Jenis Barang");
+        pn_dataBarang.add(lb_jenisBarang, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 240, -1, -1));
 
-        cb_namaBrg.setFont(new java.awt.Font("Times New Roman", 0, 16)); // NOI18N
-        cb_namaBrg.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "--Pilih Nama Barang--", "AC Portable 1 PK", "AC Portable 1,5 PK", "AC Split 1 PK", "AC Split 2 PK", "AC Standing 3 PK", "AC Standing 5 PK", "Misty Cool" }));
-        pn_dataBarang.add(cb_namaBrg, new org.netbeans.lib.awtextra.AbsoluteConstraints(240, 237, 250, -1));
+        cb_jenisBarang.setFont(new java.awt.Font("Times New Roman", 0, 16)); // NOI18N
+        cb_jenisBarang.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] {
+            "--Pilih Jenis Barang--",
+            "AC Portable",
+            "AC Split",
+            "AC Standing",
+            "Misty Fan"
+        }));
+        pn_dataBarang.add(cb_jenisBarang, new org.netbeans.lib.awtextra.AbsoluteConstraints(240, 237, 250, -1));
 
-        lb_jmlBarang.setFont(new java.awt.Font("Times New Roman", 1, 16)); // NOI18N
-        lb_jmlBarang.setText("Jumlah Barang");
-        pn_dataBarang.add(lb_jmlBarang, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 284, -1, -1));
+        lb_totalHarga.setFont(new java.awt.Font("Times New Roman", 1, 16)); // NOI18N
+        lb_totalHarga.setText("Total Harga");
+        pn_dataBarang.add(lb_totalHarga, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 284, -1, -1));
 
-        txt_jmlBarang.setFont(new java.awt.Font("Times New Roman", 0, 16)); // NOI18N
-        pn_dataBarang.add(txt_jmlBarang, new org.netbeans.lib.awtextra.AbsoluteConstraints(240, 281, 250, -1));
+        txt_totalHarga.setFont(new java.awt.Font("Times New Roman", 0, 16)); // NOI18N
+        pn_dataBarang.add(txt_totalHarga, new org.netbeans.lib.awtextra.AbsoluteConstraints(240, 281, 250, -1));
 
-        lb_tglBarang.setFont(new java.awt.Font("Times New Roman", 1, 16)); // NOI18N
-        lb_tglBarang.setText("Tanggal Barang");
-        pn_dataBarang.add(lb_tglBarang, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 325, -1, 26));
+        lb_status.setFont(new java.awt.Font("Times New Roman", 1, 16)); // NOI18N
+        lb_status.setText("Status");
+        pn_dataBarang.add(lb_status, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 325, -1, 26));
 
-        date_barang.setFont(new java.awt.Font("Times New Roman", 0, 16)); // NOI18N
-        pn_dataBarang.add(date_barang, new org.netbeans.lib.awtextra.AbsoluteConstraints(240, 325, 250, 26));
+        cb_status.setFont(new java.awt.Font("Times New Roman", 0, 16)); // NOI18N
+        cb_status.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] {
+            "--Pilih Status--",
+            "Tersedia",
+            "Tidak Tersedia"
+        }));
+        pn_dataBarang.add(cb_status, new org.netbeans.lib.awtextra.AbsoluteConstraints(240, 325, 250, 26));
 
         add(pn_dataBarang, "card2");
     }// </editor-fold>//GEN-END:initComponents
 
-    private void btn_simpanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_simpanActionPerformed
-        simpan("");
-    }//GEN-LAST:event_btn_simpanActionPerformed
+    private void btn_simpanActionPerformed(java.awt.event.ActionEvent evt) {
+        simpan();
+    }
 
-    private void btn_editActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_editActionPerformed
-        edit("");
-    }//GEN-LAST:event_btn_editActionPerformed
+    private void btn_editActionPerformed(java.awt.event.ActionEvent evt) {
+        try {
+            st = cn.createStatement();
+            st.executeUpdate("UPDATE tb_barangmasuk SET "
+                    + "jenis_barang='" + cb_jenisBarang.getSelectedItem() + "',"
+                    + "total_harga='" + txt_totalHarga.getText() + "',"
+                    + "status='" + cb_status.getSelectedItem() + "' "
+                    + "WHERE kode_barangMsk='" + txt_kodeBarang.getText() + "'");
+            tampilData("");
+            reset();
+            JOptionPane.showMessageDialog(null, "Data Berhasil Diubah");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     private void btn_hapusActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_hapusActionPerformed
         hapus("");
@@ -408,29 +410,30 @@ public class Data_Barang extends javax.swing.JPanel {
         reset();
     }//GEN-LAST:event_btn_resetActionPerformed
 
-    private void tb_dataBarangMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tb_dataBarangMouseClicked
-        klikTabel("");
-    }//GEN-LAST:event_tb_dataBarangMouseClicked
+    private void tb_dataBarangMouseClicked(java.awt.event.MouseEvent evt) {
+        txt_kodeBarang.setText(tb_dataBarang.getValueAt(tb_dataBarang.getSelectedRow(), 0).toString());
+        cb_jenisBarang.setSelectedItem(tb_dataBarang.getValueAt(tb_dataBarang.getSelectedRow(), 1).toString());
+        txt_totalHarga.setText(tb_dataBarang.getValueAt(tb_dataBarang.getSelectedRow(), 2).toString());
+        cb_status.setSelectedItem(tb_dataBarang.getValueAt(tb_dataBarang.getSelectedRow(), 3).toString());
+        
+        txt_kodeBarang.setEnabled(false);
+        btn_simpan.setEnabled(false);
+        btn_edit.setEnabled(true);
+        btn_hapus.setEnabled(true);
+    }
 
+    private boolean isKodeBarangUnique(String kodeBarang) {
+        try {
+            PreparedStatement ps = cn.prepareStatement(
+                "SELECT COUNT(*) FROM tb_barangmasuk WHERE kode_barangMsk = ?");
+            ps.setString(1, kodeBarang);
+            ResultSet rs = ps.executeQuery();
+            rs.next();
+            return rs.getInt(1) == 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 
-    // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton btn_edit;
-    private javax.swing.JButton btn_hapus;
-    private javax.swing.JButton btn_reset;
-    private javax.swing.JButton btn_simpan;
-    private javax.swing.JComboBox<String> cb_namaBrg;
-    private com.toedter.calendar.JDateChooser date_barang;
-    private javax.swing.JLabel lb_dataBarang;
-    private javax.swing.JLabel lb_formDataBarang;
-    private javax.swing.JLabel lb_jmlBarang;
-    private javax.swing.JLabel lb_kodeBarang;
-    private javax.swing.JLabel lb_namaBarang;
-    private javax.swing.JLabel lb_pencarian;
-    private javax.swing.JLabel lb_tglBarang;
-    private javax.swing.JScrollPane scroll_table;
-    private Custom.TableCustom tb_dataBarang;
-    private javax.swing.JTextField txt_jmlBarang;
-    private javax.swing.JTextField txt_kodeBarang;
-    private javax.swing.JTextField txt_pencarian;
-    // End of variables declaration//GEN-END:variables
 }

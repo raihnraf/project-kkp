@@ -237,7 +237,7 @@
             <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
               <Font name="Times New Roman" size="16" style="1"/>
             </Property>
-            <Property name="text" type="java.lang.String" value="Nama Barang"/>
+            <Property name="text" type="java.lang.String" value="Jenis Barang"/>
           </Properties>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignAbsoluteLayout" value="org.netbeans.modules.form.compat2.layouts.DesignAbsoluteLayout$AbsoluteConstraintsDescription">
@@ -251,15 +251,12 @@
               <Font name="Times New Roman" size="16" style="0"/>
             </Property>
             <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-              <StringArray count="8">
-                <StringItem index="0" value="--Pilih Nama Barang--"/>
-                <StringItem index="1" value="AC Portable 1 PK"/>
-                <StringItem index="2" value="AC Portable 1,5 PK"/>
-                <StringItem index="3" value="AC Split 1 PK"/>
-                <StringItem index="4" value="AC Split 2 PK"/>
-                <StringItem index="5" value="AC Standing 3 PK"/>
-                <StringItem index="6" value="AC Standing 5 PK"/>
-                <StringItem index="7" value="Misty Cool"/>
+              <StringArray count="5">
+                <StringItem index="0" value="--Pilih Jenis Barang--"/>
+                <StringItem index="1" value="AC Portable"/>
+                <StringItem index="2" value="AC Split"/>
+                <StringItem index="3" value="AC Standing"/>
+                <StringItem index="4" value="Misty Fan"/>
               </StringArray>
             </Property>
           </Properties>
@@ -272,12 +269,12 @@
             </Constraint>
           </Constraints>
         </Component>
-        <Component class="javax.swing.JLabel" name="lb_jmlBarang">
+        <Component class="javax.swing.JLabel" name="lb_totalHarga">
           <Properties>
             <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
               <Font name="Times New Roman" size="16" style="1"/>
             </Property>
-            <Property name="text" type="java.lang.String" value="Jumlah Barang"/>
+            <Property name="text" type="java.lang.String" value="Total Harga"/>
           </Properties>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignAbsoluteLayout" value="org.netbeans.modules.form.compat2.layouts.DesignAbsoluteLayout$AbsoluteConstraintsDescription">
@@ -285,7 +282,7 @@
             </Constraint>
           </Constraints>
         </Component>
-        <Component class="javax.swing.JTextField" name="txt_jmlBarang">
+        <Component class="javax.swing.JTextField" name="txt_totalHarga">
           <Properties>
             <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
               <Font name="Times New Roman" size="16" style="0"/>
@@ -297,28 +294,37 @@
             </Constraint>
           </Constraints>
         </Component>
-        <Component class="javax.swing.JLabel" name="lb_tglBarang">
+        <Component class="javax.swing.JLabel" name="lb_status">
           <Properties>
             <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
               <Font name="Times New Roman" size="16" style="1"/>
             </Property>
-            <Property name="text" type="java.lang.String" value="Tanggal Barang"/>
+            <Property name="text" type="java.lang.String" value="Status"/>
           </Properties>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignAbsoluteLayout" value="org.netbeans.modules.form.compat2.layouts.DesignAbsoluteLayout$AbsoluteConstraintsDescription">
-              <AbsoluteConstraints x="30" y="325" width="-1" height="26"/>
+              <AbsoluteConstraints x="30" y="328" width="-1" height="-1"/>
             </Constraint>
           </Constraints>
         </Component>
-        <Component class="com.toedter.calendar.JDateChooser" name="date_barang">
+        <Component class="javax.swing.JComboBox" name="cb_status">
           <Properties>
             <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
               <Font name="Times New Roman" size="16" style="0"/>
             </Property>
+            <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
+              <StringArray count="2">
+                <StringItem index="0" value="Tersedia"/>
+                <StringItem index="1" value="Tidak Tersedia"/>
+              </StringArray>
+            </Property>
           </Properties>
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>
+          </AuxValues>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignAbsoluteLayout" value="org.netbeans.modules.form.compat2.layouts.DesignAbsoluteLayout$AbsoluteConstraintsDescription">
-              <AbsoluteConstraints x="240" y="325" width="250" height="26"/>
+              <AbsoluteConstraints x="240" y="325" width="250" height="-1"/>
             </Constraint>
           </Constraints>
         </Component>

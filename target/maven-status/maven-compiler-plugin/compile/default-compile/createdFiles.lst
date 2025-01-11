@@ -1,6 +1,7 @@
 Main/Laporan_Barang$2.class
 Main/Form_LapStokSewa$3.class
 Main/Laporan_Barang.class
+Main/Transaksi_Barang$12.class
 Custom/Table_Custom2.class
 Main/Transaksi_Sewa$6.class
 Main/Menu_Utama$5.class
@@ -17,6 +18,7 @@ Main/Laporan_Pelanggan$3.class
 Main/Laporan_StokSewa$2.class
 Main/Data_Akun$9.class
 Custom/Table_Custom2$3.class
+Main/Menu_Utama$16.class
 Main/Data_Akun$10.class
 Main/Data_Barang$3.class
 Main/Data_Barang$5.class
@@ -45,6 +47,7 @@ Main/Data_Akun$1.class
 Main/Transaksi_Sewa$8.class
 Main/Data_Pelanggan$3.class
 Main/Form_Login$1.class
+Main/Menu_Item$5.class
 Main/Transaksi_Barang$10.class
 Main/Transaksi_Sewa$10.class
 Main/Menu_Utama$14.class
@@ -61,6 +64,7 @@ Main/Transaksi_Barang$4.class
 Main/Data_Akun$2.class
 Main/Data_Pegawai$4.class
 Main/Form_Login$6.class
+Main/Menu_Utama$15.class
 Main/Laporan_Pelanggan.class
 Main/Data_Pegawai.class
 Main/Laporan_Sewa$2.class
@@ -91,8 +95,10 @@ Main/Transaksi_Barang$3.class
 Main/Koneksi.class
 Main/Transaksi_Barang$9.class
 Main/Menu_Item$4.class
+Main/Transaksi_Barang$14.class
 Main/Form_LapStokSewa$1.class
 Main/Form_Login$8.class
+Main/Menu_Utama$17.class
 Main/Menu_Utama$GradientPanel.class
 Main/Laporan_Pelanggan$2.class
 Main/Data_Barang$2.class
@@ -112,6 +118,7 @@ Main/Menu_Utama$4.class
 Main/Transaksi_Sewa$5.class
 Main/Data_Akun$4.class
 Main/Menu_Utama$11.class
+Main/Transaksi_Barang$13.class
 Main/Test$1.class
 Main/Transaksi_Sewa$12.class
 Main/Laporan_Barang$1.class

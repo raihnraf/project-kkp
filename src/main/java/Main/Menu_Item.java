@@ -9,36 +9,33 @@ import java.awt.Color;
 
 public class Menu_Item extends javax.swing.JPanel {
     
-    public ArrayList<Menu_Item> getSubMenu(){
-        return subMenu;
-    }
-
     private final ArrayList<Menu_Item> subMenu = new ArrayList<>();
-    
     private ActionListener act;
-    
     private boolean selected = false;
     private Color defaultBackground;
     private static final Color SELECTED_COLOR = new Color(0, 0, 0, 30); // Semi-transparent black
     
-    public Menu_Item(Icon icon, boolean subMenu, Icon subIcon, String menuName, ActionListener act, Menu_Item... subMenu){
+    public Menu_Item(Icon icon, boolean hasSubMenu, Icon subIcon, String menuName, ActionListener act, Menu_Item... subMenuItems) {
         initComponents();
         
         lb_icon.setIcon(icon);
         lb_menuName.setText(menuName);
         lb_subIcon.setIcon(subIcon);
-        lb_subIcon.setVisible(subMenu);
+        lb_subIcon.setVisible(hasSubMenu);
         
-        if (act != null){
+        if (act != null) {
             this.act = act;
         }
+        
         this.setSize(new Dimension(Integer.MAX_VALUE, 45));
         this.setMaximumSize(new Dimension(Integer.MAX_VALUE, 45));
         this.setMinimumSize(new Dimension(Integer.MAX_VALUE, 45));
-        for (int i = 0; i < subMenu.length; i++){
-            this.subMenu.add(subMenu[i]);
-            subMenu[i].setVisible(false);
+        
+        for (Menu_Item item : subMenuItems) {
+            this.subMenu.add(item);
+            item.setVisible(false);
         }
+        
         defaultBackground = getBackground();
         setOpaque(true);
         
@@ -56,6 +53,25 @@ public class Menu_Item extends javax.swing.JPanel {
                 }
             }
         });
+    }
+    
+    public ArrayList<Menu_Item> getSubMenu() {
+        return subMenu;
+    }
+    
+    public void setSelected(boolean selected) {
+        this.selected = selected;
+        setOpaque(true);
+        if (selected) {
+            setBackground(SELECTED_COLOR);
+        } else {
+            setBackground(defaultBackground);
+        }
+        repaint();
+    }
+
+    public boolean isSelected() {
+        return selected;
     }
     
     /**
@@ -178,18 +194,5 @@ public class Menu_Item extends javax.swing.JPanel {
             Thread.sleep(20);
         }catch (Exception e){
         }
-    }
-
-    public void setSelected(boolean selected) {
-        this.selected = selected;
-        if (selected) {
-            setBackground(SELECTED_COLOR);
-        } else {
-            setBackground(defaultBackground);
-        }
-    }
-
-    public boolean isSelected() {
-        return selected;
     }
 }

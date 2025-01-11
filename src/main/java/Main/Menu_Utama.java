@@ -18,6 +18,7 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollBar;
 import javax.swing.Timer;
+import java.awt.Component;
 
 public class Menu_Utama extends javax.swing.JFrame {
 
@@ -259,140 +260,163 @@ public class Menu_Utama extends javax.swing.JFrame {
 
     
     private void execute() {
-    ImageIcon iconHome          = new ImageIcon(getClass().getResource("/Images/Icon/iconOffice_30px.png")); 
-    ImageIcon iconMaster        = new ImageIcon(getClass().getResource("/Images/Icon/iconMaster_30px.png"));
-    ImageIcon iconBarang        = new ImageIcon(getClass().getResource("/Images/Icon/iconDataBarang_30px.png"));
-    ImageIcon iconPegawai      = new ImageIcon(getClass().getResource("/Images/Icon/iconDataPegawai_30px.png"));
-    ImageIcon iconAkun          = new ImageIcon(getClass().getResource("/Images/Icon/iconDataUser_30px.png"));
-    ImageIcon iconTransaksi1    = new ImageIcon(getClass().getResource("/Images/Icon/iconTransaksi1_30px.png"));
-    ImageIcon iconTransaksi2    = new ImageIcon(getClass().getResource("/Images/Icon/iconTransaksi2_30px.png"));
-    ImageIcon iconLaporan1      = new ImageIcon(getClass().getResource("/Images/Icon/iconLaporan1_30px.png"));
-    ImageIcon iconLaporan2      = new ImageIcon(getClass().getResource("/Images/Icon/iconLaporan2_30px.png"));
-    
-//  =====SUBMENU MASTER=====
-    Menu_Item dataAkun     = new Menu_Item(null, true, iconAkun, "Data Akun", new ActionListener() {
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            pn_utama.removeAll();
-            pn_utama.add(new Data_Akun());
-            pn_utama.repaint();
-            pn_utama.revalidate();
-        }
-    });
-    Menu_Item dataPegawai     = new Menu_Item(null, true, iconPegawai, "Data Pegawai", new ActionListener() {
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            pn_utama.removeAll();
-            pn_utama.add(new Data_Pegawai());
-            pn_utama.repaint();
-            pn_utama.revalidate();
-        }
-    });
-    Menu_Item dataBarang    = new Menu_Item(null, true, iconBarang, "Data Barang", new ActionListener() {
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            selectMenuItem(dataBarang);
-            pn_utama.removeAll();
-            pn_utama.add(new Data_Barang());
-            pn_utama.repaint();
-            pn_utama.revalidate();
-        }
-    });
-    Menu_Item dataPelanggan     = new Menu_Item(null, true, iconBarang, "Data Pelanggan", new ActionListener() {
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            pn_utama.removeAll();
-            pn_utama.add(new Data_Pelanggan());
-            pn_utama.repaint();
-            pn_utama.revalidate();
-        }
-    });
+        ImageIcon iconHome = new ImageIcon(getClass().getResource("/Images/Icon/iconOffice_30px.png")); 
+        ImageIcon iconMaster = new ImageIcon(getClass().getResource("/Images/Icon/iconMaster_30px.png"));
+        ImageIcon iconBarang = new ImageIcon(getClass().getResource("/Images/Icon/iconDataBarang_30px.png"));
+        ImageIcon iconPegawai = new ImageIcon(getClass().getResource("/Images/Icon/iconDataPegawai_30px.png"));
+        ImageIcon iconAkun = new ImageIcon(getClass().getResource("/Images/Icon/iconDataUser_30px.png"));
+        ImageIcon iconTransaksi1 = new ImageIcon(getClass().getResource("/Images/Icon/iconTransaksi1_30px.png"));
+        ImageIcon iconTransaksi2 = new ImageIcon(getClass().getResource("/Images/Icon/iconTransaksi2_30px.png"));
+        ImageIcon iconLaporan1 = new ImageIcon(getClass().getResource("/Images/Icon/iconLaporan1_30px.png"));
+        ImageIcon iconLaporan2 = new ImageIcon(getClass().getResource("/Images/Icon/iconLaporan2_30px.png"));
+        
+        //  =====SUBMENU MASTER=====
+        Menu_Item menuHome = new Menu_Item(iconHome, false, null, "Home", new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                pn_utama.removeAll();
+                pn_utama.add(new Content_Utama());
+                pn_utama.repaint();
+                pn_utama.revalidate();
+                selectMenuItem((Menu_Item)e.getSource());
+            }
+        });
 
-    
-//  =====SUBMENU TRANSAKSI=====
-    Menu_Item transaksiBarang = new Menu_Item(null, true, iconTransaksi2, "Transaksi Barang", new ActionListener() {
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            pn_utama.removeAll();
-            pn_utama.add(new Transaksi_Barang());
-            pn_utama.repaint();
-            pn_utama.revalidate();
-        }
-    });
+        Menu_Item dataBarang = new Menu_Item(null, true, iconBarang, "Data Barang", new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                pn_utama.removeAll();
+                pn_utama.add(new Data_Barang());
+                pn_utama.repaint();
+                pn_utama.revalidate();
+                selectMenuItem((Menu_Item)e.getSource());
+            }
+        });
 
-    Menu_Item transaksiSewa = new Menu_Item(null, true, iconTransaksi2, "Transaksi Sewa", new ActionListener() {
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            pn_utama.removeAll();
-            pn_utama.add(new Transaksi_Sewa());
-            pn_utama.repaint();
-            pn_utama.revalidate();
-        }
-    });
-    
-//  =====SUBMENU LAPORAN=====
-    Menu_Item laporanPelanggan = new Menu_Item(null, true, iconLaporan2, "Laporan Pelanggan", new ActionListener() {
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            pn_utama.removeAll();
-            pn_utama.add(new Laporan_Pelanggan());
-            pn_utama.repaint();
-            pn_utama.revalidate();
-            pn_utama.revalidate();
-        }
-    });
+        Menu_Item dataPegawai = new Menu_Item(null, true, iconPegawai, "Data Pegawai", new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                pn_utama.removeAll();
+                pn_utama.add(new Data_Pegawai());
+                pn_utama.repaint();
+                pn_utama.revalidate();
+                selectMenuItem((Menu_Item)e.getSource());
+            }
+        });
 
-    Menu_Item laporanBarang = new Menu_Item(null, true, iconLaporan2, "Laporan Barang", new ActionListener() {
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            pn_utama.removeAll();
-            pn_utama.add(new Laporan_Barang());
-            pn_utama.repaint();
-            pn_utama.revalidate();
-            pn_utama.revalidate();
-        }
-    });
-    
-    Menu_Item laporanSewa = new Menu_Item(null, true, iconLaporan2, "Laporan Sewa", new ActionListener() {
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            pn_utama.removeAll();
-            pn_utama.add(new Laporan_Sewa());
-            pn_utama.repaint();
-            pn_utama.revalidate();
-            pn_utama.revalidate();
-        }
-    });
+        Menu_Item dataPelanggan = new Menu_Item(null, true, iconBarang, "Data Pelanggan", new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                pn_utama.removeAll();
+                pn_utama.add(new Data_Pelanggan());
+                pn_utama.repaint();
+                pn_utama.revalidate();
+                selectMenuItem((Menu_Item)e.getSource());
+            }
+        });
 
-    Menu_Item laporanStokSewa = new Menu_Item(null, true, iconLaporan2, "Laporan Stok Sewa", new ActionListener() {
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            pn_utama.removeAll();
-            pn_utama.add(new Laporan_StokSewa());
-            pn_utama.repaint();
-            pn_utama.revalidate();
-            pn_utama.revalidate();
-        }
-    });
-    
+        Menu_Item dataAkun = new Menu_Item(null, true, iconAkun, "Data Akun", new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                pn_utama.removeAll();
+                pn_utama.add(new Data_Akun());
+                pn_utama.repaint();
+                pn_utama.revalidate();
+                selectMenuItem((Menu_Item)e.getSource());
+            }
+        });
 
-    
-//  =====MENU HOME, MASTER, TRANSAKSI, LAPORAN=====
-    Menu_Item menuHome          = new Menu_Item(iconHome, false, null, "Home", new ActionListener() {
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            pn_utama.removeAll();
-            pn_utama.add(new Content_Utama());
-            pn_utama.repaint();
-            pn_utama.revalidate();
-        }
-    });
-    Menu_Item menuMaster        = new Menu_Item(iconMaster, false, null , "Master", null, dataBarang,dataPelanggan,dataPegawai,dataAkun);
-    Menu_Item menuTransaksi     = new Menu_Item(iconTransaksi1, false, null, "Transaksi", null, transaksiBarang,transaksiSewa);
-    Menu_Item menuLaporan       = new Menu_Item(iconLaporan1, false, null, "Laporan", null, laporanPelanggan, laporanBarang, laporanSewa, laporanStokSewa);
-    
-    addMenu(menuHome, menuMaster,menuTransaksi,menuLaporan);
-    
+        //  =====SUBMENU TRANSAKSI=====
+        Menu_Item transaksiBarang = new Menu_Item(null, true, iconTransaksi2, "Transaksi Barang", new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                pn_utama.removeAll();
+                pn_utama.add(new Transaksi_Barang());
+                pn_utama.repaint();
+                pn_utama.revalidate();
+                selectMenuItem((Menu_Item)e.getSource());
+            }
+        });
+
+        Menu_Item transaksiSewa = new Menu_Item(null, true, iconTransaksi2, "Transaksi Sewa", new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                pn_utama.removeAll();
+                pn_utama.add(new Transaksi_Sewa());
+                pn_utama.repaint();
+                pn_utama.revalidate();
+                selectMenuItem((Menu_Item)e.getSource());
+            }
+        });
+        
+        //  =====SUBMENU LAPORAN=====
+        Menu_Item laporanPelanggan = new Menu_Item(null, true, iconLaporan2, "Laporan Pelanggan", new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                pn_utama.removeAll();
+                pn_utama.add(new Laporan_Pelanggan());
+                pn_utama.repaint();
+                pn_utama.revalidate();
+                selectMenuItem((Menu_Item)e.getSource());
+            }
+        });
+
+        Menu_Item laporanBarang = new Menu_Item(null, true, iconLaporan2, "Laporan Barang", new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                pn_utama.removeAll();
+                pn_utama.add(new Laporan_Barang());
+                pn_utama.repaint();
+                pn_utama.revalidate();
+                selectMenuItem((Menu_Item)e.getSource());
+            }
+        });
+        
+        Menu_Item laporanSewa = new Menu_Item(null, true, iconLaporan2, "Laporan Sewa", new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                pn_utama.removeAll();
+                pn_utama.add(new Laporan_Sewa());
+                pn_utama.repaint();
+                pn_utama.revalidate();
+                selectMenuItem((Menu_Item)e.getSource());
+            }
+        });
+
+        Menu_Item laporanStokSewa = new Menu_Item(null, true, iconLaporan2, "Laporan Stok Sewa", new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                pn_utama.removeAll();
+                pn_utama.add(new Laporan_StokSewa());
+                pn_utama.repaint();
+                pn_utama.revalidate();
+                selectMenuItem((Menu_Item)e.getSource());
+            }
+        });
+        
+        //  =====MENU HOME, MASTER, TRANSAKSI, LAPORAN=====
+        Menu_Item menuMaster = new Menu_Item(iconMaster, false, null, "Master", new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                selectMenuItem((Menu_Item)e.getSource());
+            }
+        }, dataBarang, dataPelanggan, dataPegawai, dataAkun);
+
+        Menu_Item menuTransaksi = new Menu_Item(iconTransaksi1, false, null, "Transaksi", new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                selectMenuItem((Menu_Item)e.getSource());
+            }
+        }, transaksiBarang, transaksiSewa);
+
+        Menu_Item menuLaporan = new Menu_Item(iconLaporan1, false, null, "Laporan", new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                selectMenuItem((Menu_Item)e.getSource());
+            }
+        }, laporanPelanggan, laporanBarang, laporanSewa, laporanStokSewa);
+        
+        addMenu(menuHome, menuMaster, menuTransaksi, menuLaporan);
     }
 
     private void addMenu(Menu_Item... menu) {
@@ -407,11 +431,27 @@ public class Menu_Utama extends javax.swing.JFrame {
     }
     
     private void selectMenuItem(Menu_Item menuItem) {
-        if (selectedMenuItem != null) {
-            selectedMenuItem.setSelected(false);
+        // First, deselect all menu items
+        deselectAllMenuItems();
+        
+        // Then select the clicked item
+        if (menuItem != null) {
+            menuItem.setSelected(true);
+            selectedMenuItem = menuItem;
         }
-        selectedMenuItem = menuItem;
-        menuItem.setSelected(true);
     }
     
+    private void deselectAllMenuItems() {
+        // Helper method to deselect all menu items
+        for (Component comp : pn_menu.getComponents()) {
+            if (comp instanceof Menu_Item) {
+                Menu_Item item = (Menu_Item) comp;
+                item.setSelected(false);
+                // Also deselect all submenu items
+                for (Menu_Item subItem : item.getSubMenu()) {
+                    subItem.setSelected(false);
+                }
+            }
+        }
+    }
 }

@@ -1,9 +1,10 @@
-
 package Main;
 
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -67,9 +68,9 @@ public class Transaksi_Barang extends javax.swing.JPanel {
     
     public void simpan(String where){
         try {
-             if (txt_kodeBarang.getText().isEmpty()){
+             if (txt_noTransBarang.getText().isEmpty()){
                 JOptionPane.showMessageDialog(new JFrame(), "No Transaksi Diperlukan", "Error", JOptionPane.ERROR_MESSAGE);
-            } else if (txt_jmlBarang.getText().isEmpty()) {
+            } else if (txt_kodeBarang.getText().isEmpty()) {
                 JOptionPane.showMessageDialog(new JFrame(), "Kode Barang Diperlukan", "Error", JOptionPane.ERROR_MESSAGE);    
             } else if (cb_namaBarang.getSelectedItem() == null || cb_namaBarang.getSelectedItem().toString().isEmpty()) {
                 JOptionPane.showMessageDialog(new JFrame(), "Nama Barang Diperlukan", "Error", JOptionPane.ERROR_MESSAGE);
@@ -88,11 +89,11 @@ public class Transaksi_Barang extends javax.swing.JPanel {
                 String tanggalMasuk = sdf.format(date_tglBarang.getDate());
                 
                 st = cn.createStatement();
-                st.executeUpdate("INSERT INTO tb_transmasuk VALUES('"
-                    + txt_kodeBarang.getText() + "', '"
-                    + txt_jmlBarang.getText() + "', '"
-                    + cb_namaBarang.getSelectedItem().toString() + "', '"
+                st.executeUpdate("INSERT INTO tb_transmasuk (no_transaksiMsk, kode_barangMsk, nama_barangMsk, jumlah_barangMsk, harga_satuan, total_harga, tanggal_masuk) VALUES('"
                     + txt_noTransBarang.getText() + "', '"
+                    + txt_kodeBarang.getText() + "', '"
+                    + cb_namaBarang.getSelectedItem().toString() + "', '"
+                    + txt_jmlBarang.getText() + "', '"
                     + txt_hargaSatuan.getText() + "', '"
                     + txt_totalHarga.getText() + "', '"
                     + tanggalMasuk + "')");
@@ -244,6 +245,43 @@ public class Transaksi_Barang extends javax.swing.JPanel {
             txt_totalHarga.setText("0");
         }
     }
+
+    private void fetchItemDetails(String kodeBarang) {
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            String query = "SELECT * FROM tb_barangmasuk WHERE kode_barangMsk = ?";
+            ps = cn.prepareStatement(query);
+            ps.setString(1, kodeBarang);
+            rs = ps.executeQuery();
+            
+            if (rs.next()) {
+                // Auto populate fields
+                cb_namaBarang.setSelectedItem(rs.getString("nama_barangMsk"));
+                txt_jmlBarang.setText(rs.getString("jumlah_barangMsk"));
+                
+                // Convert SQL date to Java date for JDateChooser
+                java.sql.Date sqlDate = rs.getDate("tanggal_masuk");
+                if (sqlDate != null) {
+                    date_tglBarang.setDate(new java.util.Date(sqlDate.getTime()));
+                }
+            } else {
+                JOptionPane.showMessageDialog(null, "Kode barang tidak ditemukan!");
+                reset(); // Using your existing reset() method instead of resetFields()
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Error mengambil data barang: " + e.getMessage(), 
+                                        "Error", JOptionPane.ERROR_MESSAGE);
+        } finally {
+            try {
+                if (rs != null) rs.close();
+                if (ps != null) ps.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
     
 
     public Transaksi_Barang() {
@@ -252,6 +290,23 @@ public class Transaksi_Barang extends javax.swing.JPanel {
         judul();
         tampilData("");
         
+        // Add KeyListener to txt_kodeBarang
+        txt_kodeBarang.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                    String kodeBarang = txt_kodeBarang.getText().trim();
+                    if (!kodeBarang.isEmpty()) {
+                        fetchItemDetails(kodeBarang);
+                    } else {
+                        // Clear the fields when kode barang is empty
+                        cb_namaBarang.setSelectedIndex(0); // Reset to default "Pilih Nama Barang"
+                        txt_jmlBarang.setText("");
+                        date_tglBarang.setDate(null);
+                    }
+                }
+            }
+        });
         
         //AUTO HURUF BESAR PADA TEXTFIELD NAMA LENGKAP
         txt_jmlBarang.addKeyListener(new KeyAdapter() {
@@ -282,6 +337,18 @@ public class Transaksi_Barang extends javax.swing.JPanel {
             }
         });
         
+        // Add KeyListener to txt_kodeBarang in constructor
+txt_kodeBarang.addKeyListener(new KeyAdapter() {
+    @Override
+    public void keyPressed(KeyEvent e) {
+        if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+            String kodeBarang = txt_kodeBarang.getText().trim();
+            if (!kodeBarang.isEmpty()) {
+                fetchItemDetails(kodeBarang);
+            }
+        }
+    }
+});
         
     }
 
@@ -500,6 +567,40 @@ public class Transaksi_Barang extends javax.swing.JPanel {
         // TODO add your handling code here:
     }//GEN-LAST:event_txt_jmlBarangActionPerformed
 
+    private boolean isNumeric(String str) {
+        try {
+            Double.parseDouble(str);
+            return true;
+        } catch(NumberFormatException e) {
+            return false;
+        }
+    }
+
+    private void addQuantityAndPriceListeners() {
+        KeyListener calculateListener = new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                hitungTotalHarga();
+            }
+        };
+        
+        txt_jmlBarang.addKeyListener(calculateListener);
+        txt_hargaSatuan.addKeyListener(calculateListener);
+    }
+
+    private boolean isKodeBarangUnique(String kodeBarang) {
+        try {
+            PreparedStatement ps = cn.prepareStatement(
+                "SELECT COUNT(*) FROM tb_barangmasuk WHERE kode_barangMsk = ?");
+            ps.setString(1, kodeBarang);
+            ResultSet rs = ps.executeQuery();
+            rs.next();
+            return rs.getInt(1) == 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btn_edit;
