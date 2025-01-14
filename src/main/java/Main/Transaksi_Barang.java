@@ -21,47 +21,41 @@ public class Transaksi_Barang extends javax.swing.JPanel {
     Connection cn = Koneksi.Koneksi();
     
     public void judul(){
-        Object[] judul = {"No Transaksi", "Kode Barang", "Nama Barang", "Jumlah Barang Masuk", "Harga Satuan", "Total Harga", "Tanggal Barang Masuk"};
+        Object[] judul = {"No Transaksi", "Kode Barang", "Jenis Barang", "Total Harga", "Tanggal Masuk"};
         
         tabModel = new DefaultTableModel(null, judul){
             @Override
-            public boolean isCellEditable(int row, int column) {    //CELL TABLE TIDAK BISA DI EDIT
-                return false; // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/OverriddenMethodBody
+            public boolean isCellEditable(int row, int column) {
+                return false;
             }
-            
         };
         tb_transBarang.setModel(tabModel);
     }
     
-    public void tampilData(String where){
+    public void tampilData(String where) {
         tabModel.setRowCount(0);
-    
-        String cari = txt_pencarian.getText();
         try {
             st = cn.createStatement();
-            rs = st.executeQuery("SELECT * FROM tb_transmasuk WHERE "
-                    + "no_transaksimsk LIKE '%" + cari + "%' OR "
-                    + "kode_barangMsk LIKE '%" + cari + "%' OR "
-                    + "nama_barangMsk LIKE '%" + cari + "%' OR "
-                    + "jumlah_barangMsk LIKE '%" + cari + "%' OR "
-                    + "harga_satuan LIKE '%" + cari + "%' OR "
-                    + "total_harga LIKE '%" + cari + "%' OR "
-                    + "tanggal_masuk LIKE '%" + cari + "%'");
-
+            String sql = "SELECT no_transaksiMsk, kode_barangMsk, jenis_barang, total_harga, tanggal_masuk FROM tb_transmasuk WHERE "
+                    + "no_transaksiMsk LIKE '%" + txt_pencarian.getText() + "%' OR "
+                    + "kode_barangMsk LIKE '%" + txt_pencarian.getText() + "%' OR "
+                    + "jenis_barang LIKE '%" + txt_pencarian.getText() + "%' OR "
+                    + "total_harga LIKE '%" + txt_pencarian.getText() + "%' OR "
+                    + "tanggal_masuk LIKE '%" + txt_pencarian.getText() + "%'";
+            rs = st.executeQuery(sql);
+            
             while (rs.next()) {
                 Object[] data = {
                     rs.getString("no_transaksiMsk"),
                     rs.getString("kode_barangMsk"),
-                    rs.getString("nama_barangMsk"),
-                    rs.getString("jumlah_barangMsk"),
-                    rs.getString("harga_satuan"),
+                    rs.getString("jenis_barang"),
                     rs.getString("total_harga"),
-                    rs.getString("tanggal_masuk")
+                    rs.getDate("tanggal_masuk")
                 };
                 tabModel.addRow(data);
             }
-        } catch (SQLException e) {
-                e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
     
@@ -177,18 +171,13 @@ public class Transaksi_Barang extends javax.swing.JPanel {
     
     
     public void reset(){
-        // Mengatur ulang nilai pada ComboBox dan field input
-        txt_kodeBarang.setText("");
-        txt_jmlBarang.setText("");
-        cb_namaBarang.setSelectedItem(0); // Mengatur ComboBox ke kondisi tidak ada pilihan
         txt_noTransBarang.setText("");
-        txt_hargaSatuan.setText("");
+        txt_kodeBarang.setText("");
+        cb_jenisBarang.setSelectedIndex(0);
         txt_totalHarga.setText("");
         date_tglBarang.setDate(null);
-
-        // Mengatur tombol
+        
         txt_kodeBarang.setEnabled(true);
-        txt_jmlBarang.setEnabled(true);
         btn_simpan.setEnabled(true);
         btn_edit.setEnabled(false);
         btn_hapus.setEnabled(false);
@@ -250,29 +239,30 @@ public class Transaksi_Barang extends javax.swing.JPanel {
         PreparedStatement ps = null;
         ResultSet rs = null;
         try {
-            String query = "SELECT * FROM tb_barangmasuk WHERE kode_barangMsk = ?";
+            String query = "SELECT kode_barangMsk, jenis_barang, total_harga, tanggal_masuk FROM tb_barangmasuk WHERE kode_barangMsk = ?";
             ps = cn.prepareStatement(query);
             ps.setString(1, kodeBarang);
             rs = ps.executeQuery();
             
             if (rs.next()) {
                 // Auto populate fields
-                cb_namaBarang.setSelectedItem(rs.getString("nama_barangMsk"));
-                txt_jmlBarang.setText(rs.getString("jumlah_barangMsk"));
+                cb_jenisBarang.setSelectedItem(rs.getString("jenis_barang"));
+                txt_totalHarga.setText(rs.getString("total_harga"));
                 
                 // Convert SQL date to Java date for JDateChooser
                 java.sql.Date sqlDate = rs.getDate("tanggal_masuk");
                 if (sqlDate != null) {
                     date_tglBarang.setDate(new java.util.Date(sqlDate.getTime()));
                 }
+                
+                JOptionPane.showMessageDialog(null, "Data ditemukan!");
             } else {
                 JOptionPane.showMessageDialog(null, "Kode barang tidak ditemukan!");
-                reset(); // Using your existing reset() method instead of resetFields()
+                reset();
             }
         } catch (SQLException e) {
             e.printStackTrace();
-            JOptionPane.showMessageDialog(null, "Error mengambil data barang: " + e.getMessage(), 
-                                        "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null, "Error mengambil data barang: " + e.getMessage());
         } finally {
             try {
                 if (rs != null) rs.close();
@@ -298,11 +288,6 @@ public class Transaksi_Barang extends javax.swing.JPanel {
                     String kodeBarang = txt_kodeBarang.getText().trim();
                     if (!kodeBarang.isEmpty()) {
                         fetchItemDetails(kodeBarang);
-                    } else {
-                        // Clear the fields when kode barang is empty
-                        cb_namaBarang.setSelectedIndex(0); // Reset to default "Pilih Nama Barang"
-                        txt_jmlBarang.setText("");
-                        date_tglBarang.setDate(null);
                     }
                 }
             }
@@ -481,26 +466,26 @@ txt_kodeBarang.addKeyListener(new KeyAdapter() {
         lb_formTransBarang.setText("Form Transaksi Data Barang");
         pn_transBarang.add(lb_formTransBarang, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 144, 460, -1));
 
-        lb_kodeBarang.setFont(new java.awt.Font("Times New Roman", 1, 16)); // NOI18N
+        lb_kodeBarang.setFont(new java.awt.Font("Times New Roman", 1, 16));
         lb_kodeBarang.setText("Kode Barang");
         pn_transBarang.add(lb_kodeBarang, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 196, -1, -1));
 
-        txt_kodeBarang.setFont(new java.awt.Font("Times New Roman", 0, 16)); // NOI18N
+        txt_kodeBarang.setFont(new java.awt.Font("Times New Roman", 0, 16));
         pn_transBarang.add(txt_kodeBarang, new org.netbeans.lib.awtextra.AbsoluteConstraints(240, 193, 250, -1));
 
-        lb_namaBarang.setFont(new java.awt.Font("Times New Roman", 1, 16)); // NOI18N
+        lb_namaBarang.setFont(new java.awt.Font("Times New Roman", 1, 16));
         lb_namaBarang.setText("Nama Barang");
         pn_transBarang.add(lb_namaBarang, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 240, -1, -1));
 
-        cb_namaBarang.setFont(new java.awt.Font("Times New Roman", 0, 16)); // NOI18N
+        cb_namaBarang.setFont(new java.awt.Font("Times New Roman", 0, 16));
         cb_namaBarang.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "--Pilih Nama Barang--", "AC Portable 1 PK", "AC Portable 1,5 PK", "AC Split 1 PK", "AC Split 2 PK", "AC Standing 3 PK", "AC Standing 5 PK", "Misty Cool" }));
         pn_transBarang.add(cb_namaBarang, new org.netbeans.lib.awtextra.AbsoluteConstraints(240, 237, 250, -1));
 
-        lb_jmlBarang.setFont(new java.awt.Font("Times New Roman", 1, 16)); // NOI18N
+        lb_jmlBarang.setFont(new java.awt.Font("Times New Roman", 1, 16));
         lb_jmlBarang.setText("Jumlah Barang");
         pn_transBarang.add(lb_jmlBarang, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 284, -1, -1));
 
-        txt_jmlBarang.setFont(new java.awt.Font("Times New Roman", 0, 16)); // NOI18N
+        txt_jmlBarang.setFont(new java.awt.Font("Times New Roman", 0, 16));
         txt_jmlBarang.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 txt_jmlBarangActionPerformed(evt);
@@ -508,32 +493,32 @@ txt_kodeBarang.addKeyListener(new KeyAdapter() {
         });
         pn_transBarang.add(txt_jmlBarang, new org.netbeans.lib.awtextra.AbsoluteConstraints(240, 281, 250, -1));
 
-        lb_tglBarang.setFont(new java.awt.Font("Times New Roman", 1, 16)); // NOI18N
+        lb_tglBarang.setFont(new java.awt.Font("Times New Roman", 1, 16));
         lb_tglBarang.setText("Tanggal Barang");
         pn_transBarang.add(lb_tglBarang, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 325, -1, 26));
 
-        date_tglBarang.setFont(new java.awt.Font("Times New Roman", 0, 16)); // NOI18N
+        date_tglBarang.setFont(new java.awt.Font("Times New Roman", 0, 16));
         pn_transBarang.add(date_tglBarang, new org.netbeans.lib.awtextra.AbsoluteConstraints(240, 325, 250, 26));
 
-        lb_noTransaksi.setFont(new java.awt.Font("Times New Roman", 1, 16)); // NOI18N
+        lb_noTransaksi.setFont(new java.awt.Font("Times New Roman", 1, 16));
         lb_noTransaksi.setText("No Transaksi");
         pn_transBarang.add(lb_noTransaksi, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 372, -1, -1));
 
-        txt_noTransBarang.setFont(new java.awt.Font("Times New Roman", 0, 16)); // NOI18N
+        txt_noTransBarang.setFont(new java.awt.Font("Times New Roman", 0, 16));
         pn_transBarang.add(txt_noTransBarang, new org.netbeans.lib.awtextra.AbsoluteConstraints(240, 369, 250, -1));
 
-        lb_hargaSatuan.setFont(new java.awt.Font("Times New Roman", 1, 16)); // NOI18N
+        lb_hargaSatuan.setFont(new java.awt.Font("Times New Roman", 1, 16));
         lb_hargaSatuan.setText("Harga Satuan");
         pn_transBarang.add(lb_hargaSatuan, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 416, -1, -1));
 
-        txt_hargaSatuan.setFont(new java.awt.Font("Times New Roman", 0, 16)); // NOI18N
+        txt_hargaSatuan.setFont(new java.awt.Font("Times New Roman", 0, 16));
         pn_transBarang.add(txt_hargaSatuan, new org.netbeans.lib.awtextra.AbsoluteConstraints(240, 413, 250, -1));
 
-        lb_totalHarga.setFont(new java.awt.Font("Times New Roman", 1, 16)); // NOI18N
+        lb_totalHarga.setFont(new java.awt.Font("Times New Roman", 1, 16));
         lb_totalHarga.setText("Total Harga");
         pn_transBarang.add(lb_totalHarga, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 460, -1, -1));
 
-        txt_totalHarga.setFont(new java.awt.Font("Times New Roman", 0, 16)); // NOI18N
+        txt_totalHarga.setFont(new java.awt.Font("Times New Roman", 0, 16));
         pn_transBarang.add(txt_totalHarga, new org.netbeans.lib.awtextra.AbsoluteConstraints(240, 457, 250, -1));
 
         add(pn_transBarang, "card2");
@@ -628,5 +613,6 @@ txt_kodeBarang.addKeyListener(new KeyAdapter() {
     private javax.swing.JTextField txt_noTransBarang;
     private javax.swing.JTextField txt_pencarian;
     private javax.swing.JTextField txt_totalHarga;
+    private javax.swing.JComboBox<String> cb_jenisBarang;
     // End of variables declaration//GEN-END:variables
 }
