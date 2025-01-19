@@ -60,84 +60,103 @@ public class Transaksi_Barang extends javax.swing.JPanel {
     }
     
     
-    public void simpan(String where){
+    public void simpan(String where) {
         try {
-             if (txt_noTransBarang.getText().isEmpty()){
-                JOptionPane.showMessageDialog(new JFrame(), "No Transaksi Diperlukan", "Error", JOptionPane.ERROR_MESSAGE);
-            } else if (txt_kodeBarang.getText().isEmpty()) {
-                JOptionPane.showMessageDialog(new JFrame(), "Kode Barang Diperlukan", "Error", JOptionPane.ERROR_MESSAGE);    
-            } else if (cb_namaBarang.getSelectedItem() == null || cb_namaBarang.getSelectedItem().toString().isEmpty()) {
-                JOptionPane.showMessageDialog(new JFrame(), "Nama Barang Diperlukan", "Error", JOptionPane.ERROR_MESSAGE);
-            } else if (txt_noTransBarang.getText().isEmpty()) {
-                JOptionPane.showMessageDialog(new JFrame(), "Jumlah Barang Masuk Diperlukan", "Error", JOptionPane.ERROR_MESSAGE);
-            } else if (txt_hargaSatuan.getText().isEmpty()) {
-                JOptionPane.showMessageDialog(new JFrame(), "Harga Satuan Diperlukan", "Error", JOptionPane.ERROR_MESSAGE);
-            } else if (txt_totalHarga.getText().isEmpty()) {
-                JOptionPane.showMessageDialog(new JFrame(), "Total Harga Diperlukan", "Error", JOptionPane.ERROR_MESSAGE);
-            }else if (date_tglBarang.getDate()== null) {
-                JOptionPane.showMessageDialog(new JFrame(), "Tanggal Barang Masuk Diperlukan", "Error", JOptionPane.ERROR_MESSAGE);
-            } else {
-                
-                // Format tanggal
-                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-                String tanggalMasuk = sdf.format(date_tglBarang.getDate());
-                
-                st = cn.createStatement();
-                st.executeUpdate("INSERT INTO tb_transmasuk (no_transaksiMsk, kode_barangMsk, nama_barangMsk, jumlah_barangMsk, harga_satuan, total_harga, tanggal_masuk) VALUES('"
-                    + txt_noTransBarang.getText() + "', '"
-                    + txt_kodeBarang.getText() + "', '"
-                    + cb_namaBarang.getSelectedItem().toString() + "', '"
-                    + txt_jmlBarang.getText() + "', '"
-                    + txt_hargaSatuan.getText() + "', '"
-                    + txt_totalHarga.getText() + "', '"
-                    + tanggalMasuk + "')");
-                
-                reset();
-                tampilData("");
-                JOptionPane.showMessageDialog(null, "Data Barang Masuk Berhasil Di Simpan");
-                  //Aktifkan tombol Simpan
-                btn_edit.setEnabled(false); //Nonaktifkan tombol Update
-                btn_hapus.setEnabled(false);  //Nonaktifkan tombol Hapus
+            // Validation
+            if (txt_noTransBarang.getText().isEmpty()) {
+                JOptionPane.showMessageDialog(null, "No Transaksi Diperlukan", 
+                    "Error", JOptionPane.ERROR_MESSAGE);
+                return;
             }
+            if (txt_kodeBarang.getText().isEmpty()) {
+                JOptionPane.showMessageDialog(null, "Kode Barang Diperlukan", 
+                    "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            if (cb_jenisBarang.getSelectedIndex() == 0) {
+                JOptionPane.showMessageDialog(null, "Jenis Barang Diperlukan", 
+                    "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            if (txt_totalHarga.getText().isEmpty()) {
+                JOptionPane.showMessageDialog(null, "Total Harga Diperlukan", 
+                    "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            if (date_tglBarang.getDate() == null) {
+                JOptionPane.showMessageDialog(null, "Tanggal Masuk Diperlukan", 
+                    "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            // Debug prints
+            System.out.println("Attempting to save transaction:");
+            System.out.println("No Transaksi: " + txt_noTransBarang.getText());
+            System.out.println("Kode Barang: " + txt_kodeBarang.getText());
+            System.out.println("Jenis Barang: " + cb_jenisBarang.getSelectedItem());
+            System.out.println("Total Harga: " + txt_totalHarga.getText());
+            System.out.println("Tanggal: " + date_tglBarang.getDate());
+
+            // Insert new transaction
+            String sql = "INSERT INTO tb_transmasuk (no_transaksiMsk, kode_barangMsk, " +
+                        "jenis_barang, total_harga, tanggal_masuk) VALUES (?, ?, ?, ?, ?)";
+            PreparedStatement ps = cn.prepareStatement(sql);
+            
+            ps.setString(1, txt_noTransBarang.getText());
+            ps.setString(2, txt_kodeBarang.getText());
+            ps.setString(3, cb_jenisBarang.getSelectedItem().toString());
+            ps.setInt(4, Integer.parseInt(txt_totalHarga.getText().replace(",", "").replace(".", ""))); // Convert to int
+            ps.setDate(5, new java.sql.Date(date_tglBarang.getDate().getTime()));
+            
+            int result = ps.executeUpdate();
+            if (result > 0) {
+                tampilData("");
+                reset();
+                JOptionPane.showMessageDialog(null, "Data Transaksi Berhasil Disimpan");
+            } else {
+                JOptionPane.showMessageDialog(null, "Gagal menyimpan transaksi", 
+                    "Error", JOptionPane.ERROR_MESSAGE);
+            }
+            
         } catch (SQLException e) {
             e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Error SQL: " + e.getMessage());
+        } catch (NumberFormatException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Error: Total harga harus berupa angka");
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Error: " + e.getMessage());
         }
     }
     
     
     public void edit(String where){
-        String noTransMsk = txt_kodeBarang.getText();
-        String kodeBarangMsk = txt_jmlBarang.getText();
-        String namaBarangMsk = cb_namaBarang.getSelectedItem().toString();
-        String jumlahBarangMsk = txt_noTransBarang.getText();
-        String hargaSatuan = txt_hargaSatuan.getText();
-        String totalHarga = txt_totalHarga.getText();
-        java.util.Date tglBarangMsk_Util = date_tglBarang.getDate(); // Mendapatkan java.util.Date
-
         try {
-            // Konversi dari java.util.Date ke java.sql.Date
-            java.sql.Date sql_TglBarangMsk = null;
-            if (tglBarangMsk_Util != null) {
-                sql_TglBarangMsk = new java.sql.Date(tglBarangMsk_Util.getTime());
-            }
+            String noTransMsk = txt_noTransBarang.getText();
+            String kodeBarangMsk = txt_kodeBarang.getText();
+            String jenisBarang = cb_jenisBarang.getSelectedItem().toString();
+            String totalHarga = txt_totalHarga.getText();
+            java.util.Date tglMasuk = date_tglBarang.getDate();
             
-            st = cn.createStatement();
-            st.executeUpdate("UPDATE tb_transmasuk SET "
-                + "no_transaksiMsk='" + noTransMsk + "', "
-                + "kode_barangMsk='" + kodeBarangMsk + "', "
-                + "nama_barangMsk='" + namaBarangMsk + "', "
-                + "jumlah_barangMsk='" + jumlahBarangMsk + "', "
-                + "harga_satuan='" + hargaSatuan + "', "
-                + "total_harga='" + totalHarga + "', "
-                + "tanggal_masuk='" + sql_TglBarangMsk + "' WHERE no_transaksiMsk='" + noTransMsk + "'");
+            if (tglMasuk != null) {
+                java.sql.Date sqlDate = new java.sql.Date(tglMasuk.getTime());
+                
+                st = cn.createStatement();
+                st.executeUpdate("UPDATE tb_transmasuk SET "
+                    + "kode_barangMsk='" + kodeBarangMsk + "', "
+                    + "jenis_barang='" + jenisBarang + "', "
+                    + "total_harga='" + totalHarga + "', "
+                    + "tanggal_masuk='" + sqlDate + "' WHERE no_transaksiMsk='" + noTransMsk + "'");
 
-            tampilData(""); // Refresh data di tabel
-            reset(); // Reset input field
-            JOptionPane.showMessageDialog(null, "Update Berhasil");
-            
-            btn_simpan.setEnabled(true);  //Aktifkan tombol Simpan
-            btn_edit.setEnabled(false); //Nonaktifkan tombol Update
-            btn_hapus.setEnabled(false);  //Nonaktifkan tombol Hapus
+                tampilData("");
+                reset();
+                JOptionPane.showMessageDialog(null, "Update Berhasil");
+                
+                btn_simpan.setEnabled(true);
+                btn_edit.setEnabled(false);
+                btn_hapus.setEnabled(false);
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -188,81 +207,63 @@ public class Transaksi_Barang extends javax.swing.JPanel {
         int selectedRow = tb_transBarang.getSelectedRow();
     
         if (selectedRow != -1) {
-            System.out.println("Baris yang dipilih: " + selectedRow);  // Debug untuk memastikan baris terpilih
-
-            // Mengambil data dari baris yang dipilih
-            txt_kodeBarang.setText(tb_transBarang.getValueAt(selectedRow, 0).toString());
-            txt_jmlBarang.setText(tb_transBarang.getValueAt(selectedRow, 1).toString());
-            cb_namaBarang.setSelectedItem(tb_transBarang.getValueAt(selectedRow, 2).toString());
-            txt_noTransBarang.setText(tb_transBarang.getValueAt(selectedRow, 3).toString());
-            txt_hargaSatuan.setText(tb_transBarang.getValueAt(selectedRow, 4).toString());
-            txt_totalHarga.setText(tb_transBarang.getValueAt(selectedRow, 5).toString());
-            
+            txt_noTransBarang.setText(tb_transBarang.getValueAt(selectedRow, 0).toString());
+            txt_kodeBarang.setText(tb_transBarang.getValueAt(selectedRow, 1).toString());
+            cb_jenisBarang.setSelectedItem(tb_transBarang.getValueAt(selectedRow, 2).toString());
+            txt_totalHarga.setText(tb_transBarang.getValueAt(selectedRow, 3).toString());
 
             try {
                 SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-                String tanggalString = tb_transBarang.getValueAt(selectedRow, 6).toString();
-                java.util.Date tanggal = sdf.parse(tanggalString);  // Konversi String ke Date
-
-                // Set tanggal ke JDateChooser
+                String tanggalString = tb_transBarang.getValueAt(selectedRow, 4).toString();
+                java.util.Date tanggal = sdf.parse(tanggalString);
                 date_tglBarang.setDate(tanggal);
             } catch (ParseException e) {
                 e.printStackTrace();
             }
 
-            // Nonaktifkan atau aktifkan tombol dan textfield
-            txt_kodeBarang.setEnabled(false); //Nonaktifkan No Transaksi
-            txt_jmlBarang.setEnabled(false); // Nonaktifkan kode barang
-            btn_simpan.setEnabled(false); // Nonaktifkan tombol Simpan
-            btn_edit.setEnabled(true);  // Aktifkan tombol Update
-            btn_hapus.setEnabled(true);   // Aktifkan tombol Hapus
-        } else {
-            System.out.println("Tidak ada baris yang dipilih");  // Debug jika tidak ada baris yang dipilih
+            txt_kodeBarang.setEnabled(false);
+            btn_simpan.setEnabled(false);
+            btn_edit.setEnabled(true);
+            btn_hapus.setEnabled(true);
         }
     }
     
     
-    // Fungsi untuk menghitung total harga
-    private void hitungTotalHarga() {
-        try {
-            int jumlah = Integer.parseInt(txt_noTransBarang.getText());
-            int hargaSatuan = Integer.parseInt(txt_hargaSatuan.getText());
-            int totalHarga = jumlah * hargaSatuan;
-            txt_totalHarga.setText(String.valueOf(totalHarga));
-        } catch (NumberFormatException ex) {
-            // Jika input tidak valid (misalnya input kosong atau bukan angka), set total harga menjadi 0
-            txt_totalHarga.setText("0");
-        }
-    }
-
     private void fetchItemDetails(String kodeBarang) {
         PreparedStatement ps = null;
         ResultSet rs = null;
         try {
-            String query = "SELECT kode_barangMsk, jenis_barang, total_harga, tanggal_masuk FROM tb_barangmasuk WHERE kode_barangMsk = ?";
+            // First, check if the kode_barangMsk exists
+            String query = "SELECT jenis_barang, total_harga, tanggal_masuk " +
+                          "FROM tb_barangmasuk " +
+                          "WHERE kode_barangMsk = ?";
             ps = cn.prepareStatement(query);
             ps.setString(1, kodeBarang);
             rs = ps.executeQuery();
             
             if (rs.next()) {
-                // Auto populate fields
-                cb_jenisBarang.setSelectedItem(rs.getString("jenis_barang"));
-                txt_totalHarga.setText(rs.getString("total_harga"));
+                // Auto populate fields from tb_barangmasuk
+                String jenisBarang = rs.getString("jenis_barang");
+                String totalHarga = rs.getString("total_harga");
+                java.sql.Date tanggalMasuk = rs.getDate("tanggal_masuk");
                 
-                // Convert SQL date to Java date for JDateChooser
-                java.sql.Date sqlDate = rs.getDate("tanggal_masuk");
-                if (sqlDate != null) {
-                    date_tglBarang.setDate(new java.util.Date(sqlDate.getTime()));
+                // Set the values to form fields
+                cb_jenisBarang.setSelectedItem(jenisBarang);
+                txt_totalHarga.setText(totalHarga);
+                if (tanggalMasuk != null) {
+                    date_tglBarang.setDate(new java.util.Date(tanggalMasuk.getTime()));
                 }
                 
-                JOptionPane.showMessageDialog(null, "Data ditemukan!");
+                System.out.println("Data found: " + jenisBarang + ", " + totalHarga); // Debug line
+                JOptionPane.showMessageDialog(null, "Data barang ditemukan!");
             } else {
-                JOptionPane.showMessageDialog(null, "Kode barang tidak ditemukan!");
+                JOptionPane.showMessageDialog(null, "Kode barang tidak ditemukan!", 
+                    "Peringatan", JOptionPane.WARNING_MESSAGE);
                 reset();
             }
         } catch (SQLException e) {
             e.printStackTrace();
-            JOptionPane.showMessageDialog(null, "Error mengambil data barang: " + e.getMessage());
+            JOptionPane.showMessageDialog(null, "Error: " + e.getMessage());
         } finally {
             try {
                 if (rs != null) rs.close();
@@ -286,6 +287,7 @@ public class Transaksi_Barang extends javax.swing.JPanel {
             public void keyPressed(KeyEvent e) {
                 if (e.getKeyCode() == KeyEvent.VK_ENTER) {
                     String kodeBarang = txt_kodeBarang.getText().trim();
+                    System.out.println("Enter pressed with kode: " + kodeBarang); // Debug line
                     if (!kodeBarang.isEmpty()) {
                         fetchItemDetails(kodeBarang);
                     }
@@ -293,48 +295,16 @@ public class Transaksi_Barang extends javax.swing.JPanel {
             }
         });
         
-        //AUTO HURUF BESAR PADA TEXTFIELD NAMA LENGKAP
-        txt_jmlBarang.addKeyListener(new KeyAdapter() {
-        @Override
+        // AUTO HURUF BESAR PADA TEXTFIELD
+        txt_noTransBarang.addKeyListener(new KeyAdapter() {
+            @Override
             public void keyTyped(KeyEvent e) {
-                // Mendapatkan karakter yang diketik
                 char c = e.getKeyChar();
-                // Jika karakter adalah huruf kecil, ubah menjadi huruf besar
                 if (Character.isLowerCase(c)) {
                     e.setKeyChar(Character.toUpperCase(c));
                 }
             }
         });
-        
-        
-        // Tambahkan event listener pada txt_jumlahBarangMsk dan txt_hargaSatuan
-        txt_noTransBarang.addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyReleased(KeyEvent e) {
-                hitungTotalHarga();
-            }
-        });
-
-        txt_hargaSatuan.addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyReleased(KeyEvent e) {
-                hitungTotalHarga();
-            }
-        });
-        
-        // Add KeyListener to txt_kodeBarang in constructor
-txt_kodeBarang.addKeyListener(new KeyAdapter() {
-    @Override
-    public void keyPressed(KeyEvent e) {
-        if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-            String kodeBarang = txt_kodeBarang.getText().trim();
-            if (!kodeBarang.isEmpty()) {
-                fetchItemDetails(kodeBarang);
-            }
-        }
-    }
-});
-        
     }
 
     /**
@@ -360,15 +330,11 @@ txt_kodeBarang.addKeyListener(new KeyAdapter() {
         lb_kodeBarang = new javax.swing.JLabel();
         txt_kodeBarang = new javax.swing.JTextField();
         lb_namaBarang = new javax.swing.JLabel();
-        cb_namaBarang = new javax.swing.JComboBox<>();
-        lb_jmlBarang = new javax.swing.JLabel();
-        txt_jmlBarang = new javax.swing.JTextField();
+        cb_jenisBarang = new javax.swing.JComboBox<>();
         lb_tglBarang = new javax.swing.JLabel();
         date_tglBarang = new com.toedter.calendar.JDateChooser();
         lb_noTransaksi = new javax.swing.JLabel();
         txt_noTransBarang = new javax.swing.JTextField();
-        lb_hargaSatuan = new javax.swing.JLabel();
-        txt_hargaSatuan = new javax.swing.JTextField();
         lb_totalHarga = new javax.swing.JLabel();
         txt_totalHarga = new javax.swing.JTextField();
 
@@ -474,52 +440,42 @@ txt_kodeBarang.addKeyListener(new KeyAdapter() {
         pn_transBarang.add(txt_kodeBarang, new org.netbeans.lib.awtextra.AbsoluteConstraints(240, 193, 250, -1));
 
         lb_namaBarang.setFont(new java.awt.Font("Times New Roman", 1, 16));
-        lb_namaBarang.setText("Nama Barang");
+        lb_namaBarang.setText("Jenis Barang");
         pn_transBarang.add(lb_namaBarang, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 240, -1, -1));
 
-        cb_namaBarang.setFont(new java.awt.Font("Times New Roman", 0, 16));
-        cb_namaBarang.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "--Pilih Nama Barang--", "AC Portable 1 PK", "AC Portable 1,5 PK", "AC Split 1 PK", "AC Split 2 PK", "AC Standing 3 PK", "AC Standing 5 PK", "Misty Cool" }));
-        pn_transBarang.add(cb_namaBarang, new org.netbeans.lib.awtextra.AbsoluteConstraints(240, 237, 250, -1));
-
-        lb_jmlBarang.setFont(new java.awt.Font("Times New Roman", 1, 16));
-        lb_jmlBarang.setText("Jumlah Barang");
-        pn_transBarang.add(lb_jmlBarang, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 284, -1, -1));
-
-        txt_jmlBarang.setFont(new java.awt.Font("Times New Roman", 0, 16));
-        txt_jmlBarang.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                txt_jmlBarangActionPerformed(evt);
-            }
-        });
-        pn_transBarang.add(txt_jmlBarang, new org.netbeans.lib.awtextra.AbsoluteConstraints(240, 281, 250, -1));
+        cb_jenisBarang.setFont(new java.awt.Font("Times New Roman", 0, 16));
+        cb_jenisBarang.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { 
+            "--Pilih Jenis Barang--",
+            "AC Portable 1 PK",
+            "AC Portable 1,5 PK",
+            "AC Split 1 PK",
+            "AC Split 2 PK",
+            "AC Standing 3 PK",
+            "AC Standing 5 PK",
+            "Misty Cool"
+        }));
+        pn_transBarang.add(cb_jenisBarang, new org.netbeans.lib.awtextra.AbsoluteConstraints(240, 237, 250, -1));
 
         lb_tglBarang.setFont(new java.awt.Font("Times New Roman", 1, 16));
-        lb_tglBarang.setText("Tanggal Barang");
-        pn_transBarang.add(lb_tglBarang, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 325, -1, 26));
+        lb_tglBarang.setText("Tanggal Masuk");
+        pn_transBarang.add(lb_tglBarang, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 284, -1, 26));
 
         date_tglBarang.setFont(new java.awt.Font("Times New Roman", 0, 16));
-        pn_transBarang.add(date_tglBarang, new org.netbeans.lib.awtextra.AbsoluteConstraints(240, 325, 250, 26));
+        pn_transBarang.add(date_tglBarang, new org.netbeans.lib.awtextra.AbsoluteConstraints(240, 284, 250, 26));
 
         lb_noTransaksi.setFont(new java.awt.Font("Times New Roman", 1, 16));
         lb_noTransaksi.setText("No Transaksi");
-        pn_transBarang.add(lb_noTransaksi, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 372, -1, -1));
+        pn_transBarang.add(lb_noTransaksi, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 328, -1, -1));
 
         txt_noTransBarang.setFont(new java.awt.Font("Times New Roman", 0, 16));
-        pn_transBarang.add(txt_noTransBarang, new org.netbeans.lib.awtextra.AbsoluteConstraints(240, 369, 250, -1));
-
-        lb_hargaSatuan.setFont(new java.awt.Font("Times New Roman", 1, 16));
-        lb_hargaSatuan.setText("Harga Satuan");
-        pn_transBarang.add(lb_hargaSatuan, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 416, -1, -1));
-
-        txt_hargaSatuan.setFont(new java.awt.Font("Times New Roman", 0, 16));
-        pn_transBarang.add(txt_hargaSatuan, new org.netbeans.lib.awtextra.AbsoluteConstraints(240, 413, 250, -1));
+        pn_transBarang.add(txt_noTransBarang, new org.netbeans.lib.awtextra.AbsoluteConstraints(240, 325, 250, -1));
 
         lb_totalHarga.setFont(new java.awt.Font("Times New Roman", 1, 16));
         lb_totalHarga.setText("Total Harga");
-        pn_transBarang.add(lb_totalHarga, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 460, -1, -1));
+        pn_transBarang.add(lb_totalHarga, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 372, -1, -1));
 
         txt_totalHarga.setFont(new java.awt.Font("Times New Roman", 0, 16));
-        pn_transBarang.add(txt_totalHarga, new org.netbeans.lib.awtextra.AbsoluteConstraints(240, 457, 250, -1));
+        pn_transBarang.add(txt_totalHarga, new org.netbeans.lib.awtextra.AbsoluteConstraints(240, 369, 250, -1));
 
         add(pn_transBarang, "card2");
     }// </editor-fold>//GEN-END:initComponents
@@ -548,10 +504,6 @@ txt_kodeBarang.addKeyListener(new KeyAdapter() {
         klikTabel("");
     }//GEN-LAST:event_tb_transBarangMouseClicked
 
-    private void txt_jmlBarangActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txt_jmlBarangActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_txt_jmlBarangActionPerformed
-
     private boolean isNumeric(String str) {
         try {
             Double.parseDouble(str);
@@ -559,18 +511,6 @@ txt_kodeBarang.addKeyListener(new KeyAdapter() {
         } catch(NumberFormatException e) {
             return false;
         }
-    }
-
-    private void addQuantityAndPriceListeners() {
-        KeyListener calculateListener = new KeyAdapter() {
-            @Override
-            public void keyReleased(KeyEvent e) {
-                hitungTotalHarga();
-            }
-        };
-        
-        txt_jmlBarang.addKeyListener(calculateListener);
-        txt_hargaSatuan.addKeyListener(calculateListener);
     }
 
     private boolean isKodeBarangUnique(String kodeBarang) {
@@ -592,11 +532,9 @@ txt_kodeBarang.addKeyListener(new KeyAdapter() {
     private javax.swing.JButton btn_hapus;
     private javax.swing.JButton btn_reset;
     private javax.swing.JButton btn_simpan;
-    private javax.swing.JComboBox<String> cb_namaBarang;
+    private javax.swing.JComboBox<String> cb_jenisBarang;
     private com.toedter.calendar.JDateChooser date_tglBarang;
     private javax.swing.JLabel lb_formTransBarang;
-    private javax.swing.JLabel lb_hargaSatuan;
-    private javax.swing.JLabel lb_jmlBarang;
     private javax.swing.JLabel lb_kodeBarang;
     private javax.swing.JLabel lb_namaBarang;
     private javax.swing.JLabel lb_noTransaksi;
@@ -607,12 +545,9 @@ txt_kodeBarang.addKeyListener(new KeyAdapter() {
     private javax.swing.JPanel pn_transBarang;
     private javax.swing.JScrollPane scroll_table;
     private Custom.TableCustom tb_transBarang;
-    private javax.swing.JTextField txt_hargaSatuan;
-    private javax.swing.JTextField txt_jmlBarang;
     private javax.swing.JTextField txt_kodeBarang;
     private javax.swing.JTextField txt_noTransBarang;
     private javax.swing.JTextField txt_pencarian;
     private javax.swing.JTextField txt_totalHarga;
-    private javax.swing.JComboBox<String> cb_jenisBarang;
     // End of variables declaration//GEN-END:variables
 }
